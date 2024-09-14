@@ -1,0 +1,151 @@
+SQL> -- Assignment 2-1: Using Scalar Variables
+SQL> DECLARE
+  2      lv_test_date DATE := '10-DEC-2012';
+  3      lv_test_num CONSTANT NUMBER(3) := 10;
+  4      lv_test_txt VARCHAR2(10) := 'Delavega';
+  5  BEGIN
+  6      DBMS_OUTPUT.PUT_LINE(lv_test_date);
+  7      DBMS_OUTPUT.PUT_LINE(lv_test_num);
+  8      DBMS_OUTPUT.PUT_LINE(lv_test_txt);
+  9  END;
+10/12/12
+10
+Delavega
+
+
+PL/SQL procedure successfully completed.
+
+SQL> -- Assignment 2-2: Creating a Flowchart
+SQL> -- Compare Customer Purchases Total to a Rating system
+SQL> -- Rating is High when Purchases exceed $200
+SQL> -- Rating is Mid when purchases exceed $100
+SQL> -- Rating is Low when purchases are less than $100
+SQL> 
+SQL> -- Assignment 2-3: Using IF Statements
+SQL> DECLARE
+  2      lv_cust_purch NUMBER(5) := 300;
+  3  BEGIN
+  4      IF lv_cust_purch > 200 THEN
+  5          DBMS_OUTPUT.PUT_LINE('HIGH');
+  6      ELSIF lv_cust_purch > 100 THEN
+  7          DBMS_OUTPUT.PUT_LINE('MID');
+  8      ELSE
+  9          DBMS_OUTPUT.PUT_LINE('LOW');
+ 10      END IF;
+ 11  END;
+HIGH
+
+
+PL/SQL procedure successfully completed.
+
+SQL> -- Assignment 2-4: Using CASE Statements
+SQL> DECLARE
+  2      lv_cust_purch NUMBER(5) := 150;
+  3  BEGIN
+  4      CASE
+  5          WHEN lv_cust_purch > 200 THEN
+  6              DBMS_OUTPUT.PUT_LINE('HIGH');
+  7          WHEN lv_cust_purch > 100 THEN
+  8              DBMS_OUTPUT.PUT_LINE('MID');
+  9          ELSE
+ 10              DBMS_OUTPUT.PUT_LINE('LOW');
+ 11      END CASE;
+ 12  END;
+MID
+
+
+PL/SQL procedure successfully completed.
+
+SQL> SPOOL "C:\Users\danie\OneDrive\Documents\Programming\PLSQL\delavega_Handout2.txt" APPEND;
+SQL> -- Assignment 2-5: Using a Boolean Variable
+SQL> DECLARE
+  2      lv_amount_paid NUMBER(10) := 500;
+  3      lv_amount_owed NUMBER(10) := 600;
+  4      lv_unfinished_payment BOOLEAN := FALSE;
+  5  BEGIN
+  6      IF lv_amount_owed - lv_amount_paid > 0 THEN
+  7          lv_unfinished_payment := TRUE;
+  8          DBMS_OUTPUT.PUT_LINE('TRUE');
+  9      ELSE
+ 10          DBMS_OUTPUT.PUT_LINE('FALSE');
+ 11      END IF;
+ 12  END;
+TRUE
+
+
+PL/SQL procedure successfully completed.
+
+SQL> SPOOL "C:\Users\danie\OneDrive\Documents\Programming\PLSQL\delavega_Handout2.txt" APPEND;
+SQL> -- Assignment 2-6: Using Looping Statements
+SQL> DECLARE
+  2      lv_avail NUMBER(5) := 500;
+  3      lv_item1_price NUMBER(5) := 50;
+  4      lv_iter NUMBER(3) := 0;
+  5  BEGIN
+  6      WHILE lv_avail > 0 LOOP
+  7          lv_avail := lv_avail - lv_item1_price;
+  8          lv_iter := lv_iter + 1;
+  9      END LOOP;
+ 10      DBMS_OUTPUT.PUT_LINE(lv_iter);
+ 11  END;
+10
+
+-- Assignment 2-7: Creating a Flowchart
+-- if the quantity of items ordered is 3 or less
+--  if the customer is a memeber
+--      shipping = 3
+--  else
+--      shipping = 5
+-- elsif quanitty of items is 6 or less
+--  if the customer is a memeber
+--      shipping = 5
+--  else
+--      shipping = 7.5
+-- elsif quantity of items is 10 or less
+--  if the customer is a member
+--      shipping = 7
+--  else
+--      shipping = 10
+-- else
+--  if the customer is a member
+--      shipping = 9
+--  else
+--      shipping = 12
+
+
+PL/SQL procedure successfully completed.
+
+SQL> -- Assignment 2-7: Creating a Flowchart
+SQL> DECLARE
+  2      lv_member_status BOOLEAN := TRUE;
+  3      lv_quantity NUMBER(3) := 5;
+  4      lv_shipping NUMBER(6,2);
+  5  BEGIN
+  6      IF lv_quantity <= 3 THEN
+  7          IF lv_member_status = TRUE THEN
+  8              lv_shipping := 3.00;
+  9          ELSE
+ 10              lv_shipping := 5.00;
+ 11          END IF;
+ 12      ELSIF lv_quantity <= 6 THEN
+ 13          IF lv_member_status = TRUE THEN
+ 14              lv_shipping := 5.00;
+ 15          ELSE
+ 16              lv_shipping := 7.50;
+ 17          END IF;
+ 18      ELSIF lv_quantity <= 10 THEN
+ 19          IF lv_member_status = TRUE THEN
+ 20              lv_shipping := 7.00;
+ 21          ELSE
+ 22              lv_shipping := 10.00;
+ 23          END IF;
+ 24      ELSE
+ 25          IF lv_member_status = TRUE THEN
+ 26              lv_shipping := 9.00;
+ 27          ELSE
+ 28              lv_shipping := 12.00;
+ 29          END IF;
+ 30      END IF;
+ 31      DBMS_OUTPUT.PUT_LINE(lv_shipping);
+ 32  END;
+5
