@@ -112,14 +112,91 @@ END;
 DECLARE
   lv_item bb_product.idproduct%TYPE := 5;
   lv_avail NUMBER(5) := 500;
-  lv_quantity NUMBER(5);
+  lv_quantity NUMBER(5) := 0;
   lv_item_price bb_product.price%TYPE;
 BEGIN
   SELECT price
   INTO lv_item_price
   FROM bb_product
   WHERE idproduct = lv_item;
-  lv_quantity := FLOOR(lv_avail/lv_item_price);
-  DBMS_OUTPUT.PUT_LINE('When $'||lv_avail||' is available '||lv_quantity||' of idproduct '||lv_item||' can be purchased');
+  WHILE lv_avail >= lv_item_price LOOP
+    lv_quantity := lv_quantity + 1;
+    lv_avail := lv_avail - lv_item_price;
+  END LOOP;
+  DBMS_OUTPUT.PUT_LINE(lv_quantity||' of idproduct '||lv_item||' can be purchased');
+END;
+/
+
+
+-- 6: Working with IF statements
+DECLARE
+  lv_basket_num bb_basket.idbasket%TYPE := 5;
+  lv_quantity bb_basket.quantity%TYPE;
+  lv_ship_cost NUMBER(6,2);
+BEGIN
+  SELECT quantity
+  INTO lv_quantity
+  FROM bb_basket
+  WHERE idbasket = lv_basket_num;
+
+  CASE
+    WHEN lv_quantity <= 3 THEN lv_ship_cost := 5.00;
+    WHEN lv_quantity <= 6 THEN lv_ship_cost := 7.50;
+    WHEN lv_quantity <= 10 THEN lv_ship_cost := 10.00;
+    WHEN lv_quantity > 10 THEN lv_ship_cost := 12.00;
+  END CASE;
+
+  DBMS_OUTPUT.PUT_LINE('When idbasket = '||lv_basket_num||' shipping cost = $'||lv_ship_cost);
+
+  lv_basket_num := 12;
+  SELECT quantity
+  INTO lv_quantity
+  FROM bb_basket
+  WHERE idbasket = lv_basket_num;
+
+  CASE
+    WHEN lv_quantity <= 3 THEN lv_ship_cost := 5.00;
+    WHEN lv_quantity <= 6 THEN lv_ship_cost := 7.50;
+    WHEN lv_quantity <= 10 THEN lv_ship_cost := 10.00;
+    WHEN lv_quantity > 10 THEN lv_ship_cost := 12.00;
+  END CASE;
+  DBMS_OUTPUT.PUT_LINE('When idbasket = '||lv_basket_num||' shipping cost = $'||lv_ship_cost);
+END;
+/
+
+
+-- 7: USING Scalar Variables for Data Retrieval
+DECLARE
+  lv_subtotal bb_basket.subtotal%TYPE;
+  lv_shipping bb_basket.shipping%TYPE;
+  lv_tax bb_basket.tax%TYPE;
+  lv_total bb_basket.total%TYPE;
+  lv_basket_num bb_basket.idbasket%TYPE := 12;
+BEGIN
+  SELECT subtotal,shipping,tax,total
+  INTO lv_subtotal,lv_shipping,lv_tax,lv_total
+  FROM bb_basket
+  WHERE idbasket = lv_basket_num;
+DBMS_OUTPUT.PUT_LINE('subtotal: '||lv_subtotal||'
+shipping: '||lv_shipping||'
+tax: '||lv_tax||'
+total: '||lv_total);
+END;
+/
+
+
+-- 8: Using a Record Variable for Data Retrieval
+DECLARE
+  rv_bb_basket bb_basket%ROWTYPE;
+  lv_basket_num bb_basket.idbasket%TYPE := 12;
+BEGIN
+  SELECT *
+  INTO rv_bb_basket
+  FROM bb_basket
+  WHERE idbasket = lv_basket_num;
+DBMS_OUTPUT.PUT_LINE('subtotal: '||rv_bb_basket.subtotal||'
+shipping: '||rv_bb_basket.shipping||'
+tax: '||rv_bb_basket.tax||'
+total: '||rv_bb_basket.total);
 END;
 /
