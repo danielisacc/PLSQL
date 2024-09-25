@@ -1,0 +1,503 @@
+SQL> -- Daniel Delavega
+SQL> -- Lab 2
+SQL> -- Module 2
+SQL> -- September 25, 2024
+SQL> 
+SQL> drop table Student;
+
+Table STUDENT dropped.
+
+SQL> drop table Course;
+
+Table COURSE dropped.
+
+SQL> drop table Student_Course;
+
+Table STUDENT_COURSE dropped.
+
+SQL> -- 2.1
+SQL> CREATE SEQUENCE list;
+
+Sequence LIST created.
+
+SQL> 
+SQL> DECLARE
+  2      lv_list NUMBER;
+  3      C_XYZ CONSTANT NUMBER(10) := NULL;
+  4      V_Counter1 BINARY_INTEGER;
+  5      V_Row_number theater.ROW_PK%TYPE;
+  6      String_A VARCHAR(50);
+  7  BEGIN
+  8      NULL;
+  9  END;
+ 10  /
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> -- 2.2
+SQL> CREATE TABLE Student (
+  2      Stu_ID NUMBER(6) PRIMARY KEY,
+  3      Lname VARCHAR2(30),
+  4      Fname VARCHAR2(30),
+  5      Mi CHAR(1),
+  6      Sex CHAR(1),
+  7      Major VARCHAR(30),
+  8      Home_State CHAR(5)
+  9  );
+
+Table STUDENT created.
+
+SQL> 
+SQL> CREATE TABLE Course (
+  2      Course_ID VARCHAR2(15) PRIMARY KEY,
+  3      Section NUMBER(4),
+  4      C_Name VARCHAR2(30),
+  5      C_Description VARCHAR2(50)
+  6  );
+
+Table COURSE created.
+
+SQL> 
+SQL> CREATE TABLE Student_Course (
+  2      Stu_ID NUMBER(6),
+  3      Course_ID VARCHAR2(15),
+  4      Section NUMBER(4)
+  5  );
+
+Table STUDENT_COURSE created.
+
+SQL> 
+SQL> DECLARE
+  2      TYPE type_student_course IS RECORD (
+  3          stu_id Student_Course.Stu_ID%TYPE,
+  4          course_id Student_Course.Course_ID%TYPE,
+  5          section Student_Course.Section%TYPE
+  6      );
+  7  
+  8      TYPE type_course IS RECORD (
+  9          course_id Course.Course_ID%TYPE,
+ 10          section Course.Section%TYPE,
+ 11          c_name Course.C_Name%TYPE,
+ 12          c_description Course.C_Description%TYPE
+ 13      );
+ 14  
+ 15      TYPE type_student IS RECORD (
+ 16          stu_ID Student.Stu_ID%TYPE,
+ 17          lname student.Lname%TYPE,
+ 18          fname Student.Fname%TYPE,
+ 19          mi Student.Mi%TYPE,
+ 20          sex Student.Sex%TYPE,
+ 21          major Student.Major%TYPE,
+ 22          home_state Student.Home_State%TYPE
+ 23      );
+ 24  
+ 25      TYPE type_students_table IS TABLE OF type_student;
+ 26      student_table type_students_table := type_students_table (
+ 27          type_student(10011, 'Schmitt', 'Peter', 'M', 'M', 'History', 'Ok'),
+ 28          type_student(10012, 'Jones', 'Samson', 'A', 'M', 'English', 'Fl'),
+ 29          type_student(10013, 'Peters', 'Amy', 'A', 'F', 'English', 'Me'),
+ 30          type_student(10014, 'Johnson', 'John', 'J', 'M', 'CompSci', 'Ca'),
+ 31          type_student(10015, 'Penders', 'Alton', 'P', 'F', 'Math', 'Ga'),
+ 32          type_student(10016, 'Allen', 'Diana', 'J', 'F', 'Geography', 'Minn'),
+ 33          type_student(10017, 'Gillis', 'Jennifer', NULL, 'F', 'CompSci', 'Tx'),
+ 34          type_student(10018, 'Johns', 'Roberta', NULL, 'F', 'CompSci', 'Tx'),
+ 35          type_student(10019, 'Wise', 'Paula', NULL, 'M', 'Math', 'Cal'),
+ 36          type_student(10020, 'Evan', 'Richmond', NULL, 'M', 'English', 'Tx')
+ 37      );
+ 38  
+ 39      TYPE type_course_table IS TABLE OF type_course;
+ 40      course_table type_course_table := type_course_table (
+ 41          type_course('COSC1301', 001, 'Intro to Comp.', 'First Computer Course'),
+ 42          type_course('ITSE2356', 001, 'Intro to DBA', 'Database Course'),
+ 43          type_course('GEOG1791', 002, 'World Geography', 'Second Geography Course'),
+ 44          type_course('COSC1315', 001, 'Intro to Prog.', 'Second Computer Course'),
+ 45          type_course('ITSE1345', 001, 'Intro to DB Prog.', 'Second Database Course'),
+ 46          type_course('ENGL2024', 002, 'English Literature', 'Second English Course'),
+ 47          type_course('MATH1102', 001, 'Calculus II', 'Second Math Course'),
+ 48          type_course('ENGL1101', 001, 'American Literature', 'First English Course'),
+ 49          type_course('MATH1011', 001, 'Trig. and Algebra', 'First Math Course'),
+ 50          type_course('GEOG1010', 001, 'Texas Geography', 'First Geology Course')
+ 51      );
+ 52  
+ 53      TYPE type_student_course_table IS TABLE OF type_student_course;
+ 54      student_course_table type_student_course_table := type_student_course_table (
+ 55          type_student_course(10011, 'MATH1101', 001),
+ 56          type_student_course(10012, 'ENGL2617', 002),
+ 57          type_student_course(10013, 'ENGL2617', 001),
+ 58          type_student_course(10013, 'ENGL2024', 002),
+ 59          type_student_course(10013, 'GEOG1010', 001),
+ 60          type_student_course(10014, 'COSC1315', 001),
+ 61          type_student_course(10015, 'MATH1101', 001),
+ 62          type_student_course(10016, 'GEOG1010', 001),
+ 63          type_student_course(10016, 'GEOG1791', 002),
+ 64          type_student_course(10017, 'COSC1315', 001),
+ 65          type_student_course(10017, 'ITSE2356', 001),
+ 66          type_student_course(10018, 'COSC1315', 001),
+ 67          type_student_course(10019, 'ITSE2356', 001),
+ 68          type_student_course(10020, 'ENGL2024', 002)
+ 69      );
+ 70  BEGIN
+ 71      FOR student IN 1 .. student_table.COUNT LOOP
+ 72          INSERT INTO Student (Stu_ID, Lname, Fname, Mi, Sex, Major, Home_State)
+ 73          VALUES (
+ 74              student_table(student).stu_id,
+ 75              student_table(student).lname,
+ 76              student_table(student).fname,
+ 77              student_table(student).mi,
+ 78              student_table(student).sex,
+ 79              student_table(student).major,
+ 80              student_table(student).home_state
+ 81          );
+ 82      END LOOP;
+ 83  
+ 84      FOR course IN 1 .. course_table.COUNT LOOP
+ 85          INSERT INTO Course (Course_ID, Section, C_Name, C_Description)
+ 86          VALUES (
+ 87              course_table(course).course_id,
+ 88              course_table(course).section,
+ 89              course_table(course).c_name,
+ 90              course_table(course).c_description
+ 91          );
+ 92      END LOOP;
+ 93  
+ 94      FOR student_course IN 1 .. student_course_table.COUNT LOOP
+ 95          INSERT INTO Student_Course (Stu_ID, Course_ID, Section)
+ 96          VALUES (
+ 97              student_course_table(student_course).stu_id,
+ 98              student_course_table(student_course).course_id,
+ 99              student_course_table(student_course).section
+100          );
+101      END LOOP;
+102  END;
+103  /
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.3
+SQL> DECLARE
+  2      lv_stu_id Student.STU_ID%TYPE := 10011;
+  3      lv_num_of_courses NUMBER(3);
+  4  BEGIN
+  5      SELECT COUNT(*) As num_of_classes
+  6      INTO lv_num_of_courses
+  7      FROM Student_Course
+  8      WHERE Stu_ID = lv_stu_id;
+  9      DBMS_OUTPUT.PUT_LINE(lv_num_of_courses);
+ 10  END;
+ 11  /
+1
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.4
+SQL> DECLARE
+  2      lv_student_total NUMBER(3);
+  3  BEGIN
+  4      SELECT COUNT(*) As student_total
+  5      INTO lv_student_total
+  6      FROM Student;
+  7      DBMS_OUTPUT.PUT_LINE(lv_student_total);
+  8  END;
+  9  /
+10
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.5
+SQL> DECLARE
+  2      lv_course_total NUMBER(3);
+  3  BEGIN
+  4      SELECT COUNT(DISTINCT Course_ID)
+  5      INTO lv_course_total
+  6      FROM Student_Course;
+  7  
+  8      If lv_course_total > 10 THEN
+  9          DBMS_OUTPUT.PUT_LINE('More than 10 courses have been established');
+ 10      ELSIF lv_course_total < 10 THEN
+ 11          DBMS_OUTPUT.PUT_LINE('Less than 10 courses established');
+ 12      ELSE
+ 13          DBMS_OUTPUT.PUT_LINE('10 courses established');
+ 14      END IF;
+ 15  END;
+ 16  /
+Less than 10 courses established
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.6
+SQL> DECLARE
+  2      lv_instate Student.Home_State%TYPE := 'Tx';
+  3      TYPE type_students IS TABLE OF Student%ROWTYPE
+  4          INDEX BY PLS_INTEGER;
+  5      students type_students;
+  6      instate_students NUMBER(3) := 0;
+  7  BEGIN
+  8      SELECT * BULK COLLECT INTO students
+  9      FROM Student;
+ 10  
+ 11      FOR student IN 1..students.COUNT LOOP
+ 12          DBMS_OUTPUT.PUT_LINE(students(student).Stu_ID);
+ 13          IF students(student).Home_State = lv_instate THEN
+ 14              DBMS_OUTPUT.PUT_LINE('Student is Instate');
+ 15              instate_students := instate_students + 1;
+ 16          ELSE
+ 17              DBMS_OUTPUT.PUT_LINE('Student is out of State');
+ 18          END IF;
+ 19          DBMS_OUTPUT.PUT_LINE('-------------------');
+ 20      END LOOP;
+ 21  END;
+ 22  /
+10011
+Student is out of State
+-------------------
+10012
+Student is out of State
+-------------------
+10013
+Student is out of State
+-------------------
+10014
+Student is out of State
+-------------------
+10015
+Student is out of State
+-------------------
+10016
+Student is out of State
+-------------------
+10017
+Student is Instate
+-------------------
+10018
+Student is Instate
+-------------------
+10019
+Student is out of State
+-------------------
+10020
+Student is Instate
+-------------------
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.7
+SQL> DECLARE
+  2      lv_stu_id Student.STU_ID%TYPE := 10012;
+  3      lv_course_id Course.COURSE_ID%TYPE := 'ENGL2617';
+  4      TYPE type_students_courses IS TABLE OF Student_Course%ROWTYPE
+  5          INDEX BY PLS_INTEGER;
+  6      students_courses type_students_courses;
+  7  BEGIN
+  8      SELECT * BULK COLLECT INTO students_courses
+  9      FROM Student_Course
+ 10      WHERE STU_ID = lv_stu_id
+ 11          AND COURSE_ID = lv_course_id;
+ 12  
+ 13      DBMS_OUTPUT.PUT_LINE(lv_stu_id || ' ' || lv_course_id);
+ 14      IF students_courses.COUNT > 0 THEN
+ 15          DBMS_OUTPUT.PUT_LINE('Student is attending specified course');
+ 16      ELSE
+ 17          DBMS_OUTPUT.PUT_LINE('Student is not attending speciifed course');
+ 18      END IF;
+ 19  END;
+ 20  /
+10012 ENGL2617
+Student is attending specified course
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.8
+SQL> DECLARE
+  2      TYPE type_students IS TABLE OF Student%ROWTYPE
+  3          INDEX BY PLS_INTEGER;
+  4      students type_students;
+  5  BEGIN
+  6      SELECT * BULK COLLECT INTO students
+  7      FROM STUDENT;
+  8  
+  9      FOR student IN 1..students.COUNT LOOP
+ 10      DBMS_OUTPUT.PUT_LINE('Student : '|| students(student).Stu_ID);
+ 11          IF students(student).Sex = 'M' THEN
+ 12              DBMS_OUTPUT.PUT_LINE('SEX: MALE');
+ 13          ELSIF students(student).Sex = 'F' THEN
+ 14              DBMS_OUTPUT.PUT_LINE('SEX: FEMALE');
+ 15          ELSE
+ 16              DBMS_OUTPUT.PUT_LINE('SEX: UNDECLARED');
+ 17          END IF;
+ 18  
+ 19          CASE students(student).Major
+ 20              WHEN 'Math' THEN DBMS_OUTPUT.PUT_LINE('Major: MATH');
+ 21              WHEN 'English' THEN DBMS_OUTPUT.PUT_LINE('Major: ENGLISH');
+ 22              WHEN 'CompSci' THEN DBMS_OUTPUT.PUT_LINE('Major: COMPSCI');
+ 23              WHEN 'Geography' THEN DBMS_OUTPUT.PUT_LINE('Major: GEOGRAPHY');
+ 24              ELSE DBMS_OUTPUT.PUT_LINE('Major: NA');
+ 25          END CASE;
+ 26          DBMS_OUTPUT.PUT_LINE('-------------------');
+ 27      END LOOP;
+ 28  END;
+ 29  /
+Student : 10011
+SEX: MALE
+Major: NA
+-------------------
+Student : 10012
+SEX: MALE
+Major: ENGLISH
+-------------------
+Student : 10013
+SEX: FEMALE
+Major: ENGLISH
+-------------------
+Student : 10014
+SEX: MALE
+Major: COMPSCI
+-------------------
+Student : 10015
+SEX: FEMALE
+Major: MATH
+-------------------
+Student : 10016
+SEX: FEMALE
+Major: GEOGRAPHY
+-------------------
+Student : 10017
+SEX: FEMALE
+Major: COMPSCI
+-------------------
+Student : 10018
+SEX: FEMALE
+Major: COMPSCI
+-------------------
+Student : 10019
+SEX: MALE
+Major: MATH
+-------------------
+Student : 10020
+SEX: MALE
+Major: ENGLISH
+-------------------
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.9
+SQL> DECLARE
+  2      TYPE type_students IS TABLE OF Student%ROWTYPE
+  3          INDEX BY PLS_INTEGER;
+  4      students type_students;
+  5      lv_stu_major Student.MAJOR%TYPE;
+  6  BEGIN
+  7      SELECT * BULK COLLECT INTO students
+  8      FROM STUDENT;
+  9  
+ 10      FOR student IN 1..students.COUNT LOOP
+ 11      DBMS_OUTPUT.PUT_LINE('Student : '|| students(student).Stu_ID);
+ 12          IF students(student).Sex = 'M' THEN
+ 13              DBMS_OUTPUT.PUT_LINE('SEX: MALE');
+ 14          ELSIF students(student).Sex = 'F' THEN
+ 15              DBMS_OUTPUT.PUT_LINE('SEX: FEMALE');
+ 16          ELSE
+ 17              DBMS_OUTPUT.PUT_LINE('SEX: UNDECLARED');
+ 18          END IF;
+ 19  
+ 20          lv_stu_major := students(student).Major;
+ 21          IF lv_stu_major = 'Math' THEN DBMS_OUTPUT.PUT_LINE('Major: MATH');
+ 22          ELSIF lv_stu_major = 'English' THEN DBMS_OUTPUT.PUT_LINE('Major: ENGLISH');
+ 23          ELSIF lv_stu_major = 'CompSci' THEN DBMS_OUTPUT.PUT_LINE('Major: COMPSCI');
+ 24          ELSIF lv_stu_major = 'Geography' THEN DBMS_OUTPUT.PUT_LINE('Major: GEOGRAPHY');
+ 25          ELSE DBMS_OUTPUT.PUT_LINE('Major: NA');
+ 26          END IF;
+ 27          DBMS_OUTPUT.PUT_LINE('-------------------');
+ 28      END LOOP;
+ 29  END;
+ 30  /
+Student : 10011
+SEX: MALE
+Major: NA
+-------------------
+Student : 10012
+SEX: MALE
+Major: ENGLISH
+-------------------
+Student : 10013
+SEX: FEMALE
+Major: ENGLISH
+-------------------
+Student : 10014
+SEX: MALE
+Major: COMPSCI
+-------------------
+Student : 10015
+SEX: FEMALE
+Major: MATH
+-------------------
+Student : 10016
+SEX: FEMALE
+Major: GEOGRAPHY
+-------------------
+Student : 10017
+SEX: FEMALE
+Major: COMPSCI
+-------------------
+Student : 10018
+SEX: FEMALE
+Major: COMPSCI
+-------------------
+Student : 10019
+SEX: MALE
+Major: MATH
+-------------------
+Student : 10020
+SEX: MALE
+Major: ENGLISH
+-------------------
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 2.10
+SQL> DECLARE
+  2      TYPE type_students IS TABLE OF Student%ROWTYPE
+  3          INDEX BY PLS_INTEGER;
+  4      students type_students;
+  5      counter NUMBER(3);
+  6  BEGIN
+  7      SELECT * BULK COLLECT INTO students
+  8      FROM Student;
+  9  
+ 10      counter := students.COUNT;
+ 11      WHILE(counter > 0) LOOP
+ 12          DBMS_OUTPUT.PUT_LINE(students(counter).Stu_ID);
+ 13          counter := counter - 1;
+ 14      END LOOP;
+ 15  END;
+10020
+10019
+10018
+10017
+10016
+10015
+10014
+10013
+10012
+10011
+
+
+PL/SQL procedure successfully completed.
+
+SQL> SPOOL /home/daniel/Documents/Programming/PLSQL/delavega_Lab2.txt;

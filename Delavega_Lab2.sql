@@ -1,3 +1,13 @@
+SPOOL /home/daniel/Documents/Programming/PLSQL/delavega_Lab2.txt;
+SET ECHO ON;
+-- Daniel Delavega
+-- Lab 2
+-- Module 2
+-- September 25, 2024
+
+drop table Student;
+drop table Course;
+drop table Student_Course;
 -- 2.1
 CREATE SEQUENCE list;
 
@@ -181,4 +191,130 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('10 courses established');
     END IF;
 END;
+/
 
+-- 2.6
+DECLARE
+    lv_instate Student.Home_State%TYPE := 'Tx';
+    TYPE type_students IS TABLE OF Student%ROWTYPE
+        INDEX BY PLS_INTEGER;
+    students type_students;
+    instate_students NUMBER(3) := 0;
+BEGIN
+    SELECT * BULK COLLECT INTO students
+    FROM Student;
+
+    FOR student IN 1..students.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE(students(student).Stu_ID);
+        IF students(student).Home_State = lv_instate THEN
+            DBMS_OUTPUT.PUT_LINE('Student is Instate');
+            instate_students := instate_students + 1;
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Student is out of State');
+        END IF;
+        DBMS_OUTPUT.PUT_LINE('-------------------');
+    END LOOP;
+END;
+/
+
+-- 2.7
+DECLARE
+    lv_stu_id Student.STU_ID%TYPE := 10012;
+    lv_course_id Course.COURSE_ID%TYPE := 'ENGL2617';
+    TYPE type_students_courses IS TABLE OF Student_Course%ROWTYPE
+        INDEX BY PLS_INTEGER;
+    students_courses type_students_courses;
+BEGIN
+    SELECT * BULK COLLECT INTO students_courses
+    FROM Student_Course
+    WHERE STU_ID = lv_stu_id
+        AND COURSE_ID = lv_course_id;
+    
+    DBMS_OUTPUT.PUT_LINE(lv_stu_id || ' ' || lv_course_id);
+    IF students_courses.COUNT > 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Student is attending specified course');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Student is not attending speciifed course');
+    END IF;
+END;
+/
+
+-- 2.8
+DECLARE
+    TYPE type_students IS TABLE OF Student%ROWTYPE
+        INDEX BY PLS_INTEGER;
+    students type_students;
+BEGIN
+    SELECT * BULK COLLECT INTO students
+    FROM STUDENT;
+
+    FOR student IN 1..students.COUNT LOOP
+    DBMS_OUTPUT.PUT_LINE('Student : '|| students(student).Stu_ID);
+        IF students(student).Sex = 'M' THEN
+            DBMS_OUTPUT.PUT_LINE('SEX: MALE');
+        ELSIF students(student).Sex = 'F' THEN
+            DBMS_OUTPUT.PUT_LINE('SEX: FEMALE');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('SEX: UNDECLARED');
+        END IF;
+
+        CASE students(student).Major
+            WHEN 'Math' THEN DBMS_OUTPUT.PUT_LINE('Major: MATH');
+            WHEN 'English' THEN DBMS_OUTPUT.PUT_LINE('Major: ENGLISH');
+            WHEN 'CompSci' THEN DBMS_OUTPUT.PUT_LINE('Major: COMPSCI');
+            WHEN 'Geography' THEN DBMS_OUTPUT.PUT_LINE('Major: GEOGRAPHY');
+            ELSE DBMS_OUTPUT.PUT_LINE('Major: NA');
+        END CASE;
+        DBMS_OUTPUT.PUT_LINE('-------------------');
+    END LOOP;
+END;
+/
+
+-- 2.9
+DECLARE
+    TYPE type_students IS TABLE OF Student%ROWTYPE
+        INDEX BY PLS_INTEGER;
+    students type_students;
+    lv_stu_major Student.MAJOR%TYPE;
+BEGIN
+    SELECT * BULK COLLECT INTO students
+    FROM STUDENT;
+
+    FOR student IN 1..students.COUNT LOOP
+    DBMS_OUTPUT.PUT_LINE('Student : '|| students(student).Stu_ID);
+        IF students(student).Sex = 'M' THEN
+            DBMS_OUTPUT.PUT_LINE('SEX: MALE');
+        ELSIF students(student).Sex = 'F' THEN
+            DBMS_OUTPUT.PUT_LINE('SEX: FEMALE');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('SEX: UNDECLARED');
+        END IF;
+        
+        lv_stu_major := students(student).Major;
+        IF lv_stu_major = 'Math' THEN DBMS_OUTPUT.PUT_LINE('Major: MATH');
+        ELSIF lv_stu_major = 'English' THEN DBMS_OUTPUT.PUT_LINE('Major: ENGLISH');
+        ELSIF lv_stu_major = 'CompSci' THEN DBMS_OUTPUT.PUT_LINE('Major: COMPSCI');
+        ELSIF lv_stu_major = 'Geography' THEN DBMS_OUTPUT.PUT_LINE('Major: GEOGRAPHY');
+        ELSE DBMS_OUTPUT.PUT_LINE('Major: NA');
+        END IF;
+        DBMS_OUTPUT.PUT_LINE('-------------------');
+    END LOOP;
+END;
+/
+
+-- 2.10
+DECLARE
+    TYPE type_students IS TABLE OF Student%ROWTYPE
+        INDEX BY PLS_INTEGER;
+    students type_students;
+    counter NUMBER(3);
+BEGIN
+    SELECT * BULK COLLECT INTO students
+    FROM Student;
+
+    counter := students.COUNT;
+    WHILE(counter > 0) LOOP
+        DBMS_OUTPUT.PUT_LINE(students(counter).Stu_ID);
+        counter := counter - 1;
+    END LOOP;
+END;
