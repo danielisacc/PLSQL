@@ -1,4 +1,4 @@
-SPOOL C:\Users\danie\OneDrive\Documents\Programming\PLSQL\delavega_Handout3.txt;
+SPOOL /home/daniel/Documents/Programming/PLSQL/Handout3.txt;
 SET ECHO ON;
 -- Daniel Delavega
 -- Competency 2.3 Hands-On Assignment
@@ -79,7 +79,7 @@ BEGIN
   ELSE
     lv_rating_txt := 'LOW';
   END IF; 
-   DBMS_OUTPUT.PUT_LINE('Shopper '||:g_shopper||' is rated '||lv_rating_txt);
+   DBMS_OUTPUT.PUT_LINE('Shopper '||lv_shop_num||' is rated '||lv_rating_txt);
 END;
 /
 
@@ -104,7 +104,7 @@ BEGIN
     WHEN lv_total_num <= 100 THEN
       lv_rating_txt := 'LOW';
   END CASE; 
-   DBMS_OUTPUT.PUT_LINE('Shopper '||:g_shopper||' is rated '||lv_rating_txt);
+   DBMS_OUTPUT.PUT_LINE('Shopper '||lv_shop_num||' is rated '||lv_rating_txt);
 END;
 /
 
