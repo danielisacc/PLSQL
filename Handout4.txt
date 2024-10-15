@@ -1,0 +1,316 @@
+SQL> -- 4-1 Using an Explicit Cursor
+SQL> DECLARE
+  2     CURSOR cur_basket IS
+  3       SELECT bi.idBasket, bi.quantity, p.stock
+  4         FROM bb_basketitem bi INNER JOIN bb_product p
+  5           USING (idProduct)
+  6         WHERE bi.idBasket = 6;
+  7     TYPE type_basket IS RECORD (
+  8       basket bb_basketitem.idBasket%TYPE,
+  9       qty bb_basketitem.quantity%TYPE,
+ 10       stock bb_product.stock%TYPE);
+ 11     rec_basket type_basket;
+ 12     lv_flag_txt CHAR(1) := 'Y';
+ 13  BEGIN
+ 14     OPEN cur_basket;
+ 15     LOOP 
+ 16       FETCH cur_basket INTO rec_basket;
+ 17        EXIT WHEN cur_basket%NOTFOUND;
+ 18        IF rec_basket.stock < rec_basket.qty THEN lv_flag_txt := 'N'; END IF;
+ 19     END LOOP;
+ 20     CLOSE cur_basket;
+ 21     IF lv_flag_txt = 'Y' THEN DBMS_OUTPUT.PUT_LINE('All items in stock!'); END IF;
+ 22     IF lv_flag_txt = 'N' THEN DBMS_OUTPUT.PUT_LINE('All items NOT in stock!'); END IF;   
+ 23  END;
+ 24  /
+All items in stock!
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 4-2 Using a Cursor For Loop
+SQL> DECLARE
+  2     CURSOR cur_shopper IS
+  3       SELECT a.idShopper, a.promo,  b.total                          
+  4         FROM bb_shopper a, (SELECT b.idShopper, SUM(bi.quantity*bi.price) total
+  5                              FROM bb_basketitem bi, bb_basket b
+  6                              WHERE bi.idBasket = b.idBasket
+  7                              GROUP BY idShopper) b
+  8          WHERE a.idShopper = b.idShopper
+  9       FOR UPDATE OF a.idShopper NOWAIT;
+ 10     lv_promo_txt CHAR(1);
+ 11  BEGIN
+ 12    FOR rec_shopper IN cur_shopper LOOP
+ 13     lv_promo_txt := 'X';
+ 14     IF rec_shopper.total > 100 THEN 
+ 15            lv_promo_txt := 'A';
+ 16     END IF;
+ 17     IF rec_shopper.total BETWEEN 50 AND 99 THEN 
+ 18            lv_promo_txt := 'B';
+ 19     END IF;   
+ 20     IF lv_promo_txt <> 'X' THEN
+ 21       UPDATE bb_shopper
+ 22        SET promo = lv_promo_txt
+ 23        WHERE CURRENT OF cur_shopper;
+ 24     END IF;
+ 25    END LOOP;
+ 26    COMMIT;
+ 27  END;
+ 28  /
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> SELECT idShopper, s.promo, SUM(bi.quantity*bi.price) total
+  2  FROM bb_shopper s INNER JOIN bb_basket b USING(idShopper)
+  3      INNER JOIN bb_basketitem bi USING(idBasket)
+  4  GROUP BY idShopper, s.promo
+  5  ORDER BY idShopper;
+
+ IDSHOPPER P      TOTAL
+---------- - ----------
+        21 B       55.1
+        22 A     191.59
+        23 B       64.8
+        24         48.9
+        25 B       72.4
+        26           20
+        27         32.4
+
+7 rows selected. 
+
+SQL> 
+SQL> -- 4-3 Using Implicit Cursors
+SQL> UPDATE bb_shopper
+  2    SET promo = NULL;
+
+7 rows updated.
+
+SQL> UPDATE bb_shopper
+  2    SET promo = 'B'
+  3    WHERE idShopper IN (21,23,25);
+
+3 rows updated.
+
+SQL> UPDATE bb_shopper
+  2    SET promo = 'A'
+  3    WHERE idShopper = 22;
+
+1 row updated.
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> BEGIN
+  2   UPDATE bb_shopper
+  3    SET promo = NULL
+  4    WHERE promo IS NOT NULL;
+  5    DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT);
+  6  END;
+  7  /
+4
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 4-4 Using Exception Handling
+SQL> DECLARE
+  2    lv_tax_num NUMBER(2,2);
+  3  BEGIN
+  4   CASE  'NJ' 
+  5    WHEN 'VA' THEN lv_tax_num := .04;
+  6    WHEN 'NC' THEN lv_tax_num := .02;  
+  7    WHEN 'NY' THEN lv_tax_num := .06;  
+  8   END CASE;
+  9   DBMS_OUTPUT.PUT_LINE('tax rate = '||lv_tax_num);
+ 10  END;
+ 11  /
+
+Error starting at line : 85 in command -
+DECLARE
+  lv_tax_num NUMBER(2,2);
+BEGIN
+ CASE  'NJ' 
+  WHEN 'VA' THEN lv_tax_num := .04;
+  WHEN 'NC' THEN lv_tax_num := .02;  
+  WHEN 'NY' THEN lv_tax_num := .06;  
+ END CASE;
+ DBMS_OUTPUT.PUT_LINE('tax rate = '||lv_tax_num);
+END;
+Error report -
+ORA-06592: CASE not found while executing CASE statement
+ORA-06512: at line 8
+06592. 00000 -  "CASE not found while executing CASE statement"
+*Cause:    A CASE statement must either list all possible cases or have an
+           else clause.
+*Action:   Add all missing cases or an else clause.
+
+More Details :
+https://docs.oracle.com/error-help/db/ora-06592/
+https://docs.oracle.com/error-help/db/ora-06512/
+SQL> 
+SQL> -- 4-4-3 Problem Fixed
+SQL> DECLARE
+  2    lv_tax_num NUMBER(2,2);
+  3    broken_case EXCEPTION;
+  4    PRAGMA EXCEPTION_INIT(broken_case, -06592);
+  5  BEGIN
+  6   CASE  'NJ' 
+  7    WHEN 'VA' THEN lv_tax_num := .04;
+  8    WHEN 'NC' THEN lv_tax_num := .02;  
+  9    WHEN 'NY' THEN lv_tax_num := .06;  
+ 10   END CASE;
+ 11   DBMS_OUTPUT.PUT_LINE('tax rate = '||lv_tax_num);
+ 12  EXCEPTION
+ 13      WHEN broken_case THEN
+ 14          DBMS_OUTPUT.PUT_LINE('No tax');
+ 15  END;
+ 16  /
+No tax
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 4-5 Handling Predefined Exceptions
+SQL> DECLARE
+  2   rec_shopper bb_shopper%ROWTYPE;
+  3  BEGIN
+  4   SELECT *
+  5    INTO rec_shopper
+  6    FROM bb_shopper
+  7    WHERE idShopper = 99;
+  8  EXCEPTION
+  9      WHEN NO_DATA_FOUND THEN
+ 10          DBMS_OUTPUT.PUT_LINE('Invlaid Shopper ID');
+ 11  END;
+ 12  /
+Invlaid Shopper ID
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 4-6 Handling Exceptions with Undefined Errors
+SQL> ALTER TABLE bb_basketitem
+  2    ADD CONSTRAINT bitems_qty_ck CHECK (quantity < 20);
+
+Table BB_BASKETITEM altered.
+
+SQL> 
+SQL> DECLARE
+  2      high_quantity EXCEPTION;
+  3      PRAGMA EXCEPTION_INIT(high_quantity, -02290);
+  4  BEGIN
+  5    INSERT INTO bb_basketitem 
+  6     VALUES (88,8,10.8,21,16,2,3);
+  7  EXCEPTION
+  8      WHEN high_quantity THEN
+  9          DBMS_OUTPUT.PUT_LINE('Check Quantity');
+ 10  END;
+ 11  /
+Check Quantity
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 4-7 Handling Exceptions with User-Defined Errors
+SQL> DECLARE
+  2      none_updated EXCEPTION;
+  3      lv_old_num NUMBER(3) := 30;
+  4      lv_new_num NUMBER(3) := 4;
+  5  BEGIN
+  6    UPDATE bb_basketitem
+  7     SET idBasket = lv_new_num
+  8     WHERE idBasket = lv_old_num;
+  9  
+ 10     IF SQL%NOTFOUND THEN
+ 11      RAISE none_updated;
+ 12     END IF;
+ 13  EXCEPTION
+ 14      WHEN none_updated THEN
+ 15          DBMS_OUTPUT.PUT_LINE('Invalid original basket ID');
+ 16  END;
+ 17  /
+Invalid original basket ID
+
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> -- 4-8 Processing and Updating a Group of Rows
+SQL> desc EMP;
+Name     Null?    Type         
+-------- -------- ------------ 
+EMPNO    NOT NULL NUMBER(4)    
+ENAME    NOT NULL VARCHAR2(10) 
+JOB               VARCHAR2(10) 
+MGR               NUMBER(4)    
+HIREDATE          DATE         
+SAL               NUMBER(6)    
+COMM              NUMBER(6)    
+DEPTNO            NUMBER(3)    
+SQL> -- A PLSQL block is needed to calculate annual raises and update employee salary amounts
+SQL> -- All Salaries are recorded as monthly amounts
+SQL> 
+SQL> -- Requirements
+SQL>     -- Calculate 6% ANNUAL raises for all employees excepr the president
+SQL>     -- if a 6% raise totals more than $2000, cap the raise at $2000
+SQL>     -- update the salary for each employee in the table
+SQL>     -- For each employee number, display the current Annual salary,raise, and proposed new ANNUAL SALARY
+SQL>     -- Finally, following the details for each employee, show the total cost of all employees salaray increase for BB
+SQL> 
+SQL> DECLARE
+  2      raise_amt NUMBER(3,2) := 0.06;
+  3      except_job emp.job%TYPE := 'PRESIDENT';
+  4      raise_cap NUMBER(6) := 2000;
+  5      total_cost NUMBER(10) := 0;
+  6      current_raise NUMBER(6);
+  7      current_annual NUMBER(7);
+  8      new_annual NUMBER(7);
+  9  
+ 10      CURSOR cur_emp IS
+ 11          SELECT empno, sal
+ 12          FROM EMP
+ 13          WHERE job != except_job;
+ 14  
+ 15      emp_rec emp%ROWTYPE;
+ 16  BEGIN
+ 17      FOR emp_rec IN cur_emp
+ 18      LOOP
+ 19          current_annual := emp_rec.sal * 12;
+ 20          if (current_annual * raise_amt > raise_cap) THEN
+ 21              current_raise := raise_cap;
+ 22          ELSE
+ 23              current_raise := current_annual * raise_amt;
+ 24          END IF;
+ 25          new_annual := current_raise + current_annual;
+ 26          DBMS_OUTPUT.PUT_LINE(emp_rec.empno ||' '|| current_annual ||' '|| current_raise ||' '||  new_annual);
+ 27          total_cost := total_cost + current_raise;
+ 28      END LOOP;
+ 29      DBMS_OUTPUT.PUT_LINE(total_cost);
+ 30  END;
+7566 35700 2000 37700
+7698 34200 2000 36200
+7782 29400 1764 31164
+7902 36000 2000 38000
+7369 9600 576 10176
+7499 19200 1152 20352
+7521 15000 900 15900
+7654 15000 900 15900
+7788 36000 2000 38000
+7844 18000 1080 19080
+7876 13200 792 13992
+7900 11400 684 12084
+7934 15600 936 16536
+16784
+
+
+PL/SQL procedure successfully completed.
+
+SQL> SPOOL /home/daniel/Documents/Programming/PLSQL/Handout4.txt;
