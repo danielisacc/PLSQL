@@ -1,0 +1,518 @@
+SQL> SET SERVEROUTPUT ON;
+SQL> SET ECHO ON;
+SQL> -- 5-1: Creating a Procedure
+SQL> desc BB_PRODUCT;
+Name         Null?    Type          
+------------ -------- ------------- 
+IDPRODUCT    NOT NULL NUMBER(2)     
+PRODUCTNAME           VARCHAR2(25)  
+DESCRIPTION           VARCHAR2(100) 
+PRODUCTIMAGE          VARCHAR2(25)  
+PRICE                 NUMBER(6,2)   
+SALESTART             DATE          
+SALEEND               DATE          
+SALEPRICE             NUMBER(6,2)   
+ACTIVE                NUMBER(1)     
+FEATURED              NUMBER(1)     
+FEATURESTART          DATE          
+FEATUREEND            DATE          
+TYPE                  CHAR(1)       
+IDDEPARTMENT          NUMBER(2)     
+STOCK                 NUMBER(5,1)   
+ORDERED               NUMBER(3)     
+REORDER               NUMBER(3)     
+SQL> 
+SQL> SELECT * FROM bb_product;
+
+ IDPRODUCT PRODUCTNAME               DESCRIPTION                                                                                          PRODUCTIMAGE                   PRICE SALESTAR SALEEND   SALEPRICE     ACTIVE   FEATURED FEATURES FEATUREE T IDDEPARTMENT      STOCK    ORDERED    REORDER
+---------- ------------------------- ---------------------------------------------------------------------------------------------------- ------------------------- ---------- -------- -------- ---------- ---------- ---------- -------- -------- - ------------ ---------- ---------- ----------
+         1 CapressoBar Modal #351    CapressoBar Model #388                                                                               capresso.gif                   99.98                                       1                              E            2         23          0         12
+         2 Capresso Ultima           Coffee and Espresso and Cappuccino Machine. Brews from one espresso to two six ounce cups of coffee  capresso2.gif                 129.99                                       1                              E            2         15          0          9
+         3 Eileen 4-cup French Press A unique coffeemaker from those proud craftsmen in windy Normandy.                                   frepress.gif                    32.5                                       1                              E            2         30          0         15
+         4 Coffee Grinder            Avoid blade grinders! This mill grinder allows you to choose a fine grind to a coarse grind.         grind.gif                       28.5                                       1                              E            2         26          0         25
+         5 Sumatra                   Spicy and intense with herbal aroma.                                                                 sumatra.jpg                     10.5                                       1                              C            1         41          0         45
+         6 Guatamala                 heavy body, spicy twist, aromatic and smokey flavor.                                                 Guatamala.jpg                     10 01/06/12 15/06/12          8          1                              C            1         42          0         35
+         7 Columbia                  dry, nutty flavor and smoothness                                                                     columbia.jpg                    10.8                                       1                              C            1         61          0         35
+         8 Brazil                    well-balanced mellow flavor, a medium body with hints of cocoa and a mild, nut-like aftertaste       brazil.jpg                      10.8                                       1                              C            1         53          0         35
+         9 Ethiopia                  distinctive berry-like flavor and aroma, reminds many of a fruity, memorable wine.                   ethiopia.jpg                      15                                       1                              C            1         54          0         35
+        10 Espresso                  dense, caramel-like sweetness with a soft acidity. Roasted somewhat darker than traditional Italian. espresso.jpg                      10                                       1                              C            1         50         50         50
+        15 Roasted Blend             Well-balanced mix of roeasted beans, a medium body                                                   roasted.jpg                      9.5                                       1                                                                             
+
+11 rows selected. 
+
+SQL> 
+SQL> CREATE OR REPLACE PROCEDURE prod_name_sp
+  2      (p_prodid IN bb_product.idproduct%TYPE,
+  3      p_descrip IN bb_product.description%TYPE)
+  4  IS
+  5  BEGIN
+  6      UPDATE bb_product
+  7          SET description = p_descrip
+  8          WHERE idproduct =p_prodid;
+  9      COMMIT;
+ 10  END;
+ 11  /
+
+Procedure PROD_NAME_SP compiled
+
+SQL> DECLARE
+  2      prod_id NUMBER(1) := 1;
+  3      descrip VARCHAR2(30) := 'CapressoBar Model #388';
+  4  BEGIN
+  5      prod_name_sp(prod_id, descrip);
+  6  END;
+  7  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM bb_product;
+
+ IDPRODUCT PRODUCTNAME               DESCRIPTION                                                                                          PRODUCTIMAGE                   PRICE SALESTAR SALEEND   SALEPRICE     ACTIVE   FEATURED FEATURES FEATUREE T IDDEPARTMENT      STOCK    ORDERED    REORDER
+---------- ------------------------- ---------------------------------------------------------------------------------------------------- ------------------------- ---------- -------- -------- ---------- ---------- ---------- -------- -------- - ------------ ---------- ---------- ----------
+         1 CapressoBar Modal #351    CapressoBar Model #388                                                                               capresso.gif                   99.98                                       1                              E            2         23          0         12
+         2 Capresso Ultima           Coffee and Espresso and Cappuccino Machine. Brews from one espresso to two six ounce cups of coffee  capresso2.gif                 129.99                                       1                              E            2         15          0          9
+         3 Eileen 4-cup French Press A unique coffeemaker from those proud craftsmen in windy Normandy.                                   frepress.gif                    32.5                                       1                              E            2         30          0         15
+         4 Coffee Grinder            Avoid blade grinders! This mill grinder allows you to choose a fine grind to a coarse grind.         grind.gif                       28.5                                       1                              E            2         26          0         25
+         5 Sumatra                   Spicy and intense with herbal aroma.                                                                 sumatra.jpg                     10.5                                       1                              C            1         41          0         45
+         6 Guatamala                 heavy body, spicy twist, aromatic and smokey flavor.                                                 Guatamala.jpg                     10 01/06/12 15/06/12          8          1                              C            1         42          0         35
+         7 Columbia                  dry, nutty flavor and smoothness                                                                     columbia.jpg                    10.8                                       1                              C            1         61          0         35
+         8 Brazil                    well-balanced mellow flavor, a medium body with hints of cocoa and a mild, nut-like aftertaste       brazil.jpg                      10.8                                       1                              C            1         53          0         35
+         9 Ethiopia                  distinctive berry-like flavor and aroma, reminds many of a fruity, memorable wine.                   ethiopia.jpg                      15                                       1                              C            1         54          0         35
+        10 Espresso                  dense, caramel-like sweetness with a soft acidity. Roasted somewhat darker than traditional Italian. espresso.jpg                      10                                       1                              C            1         50         50         50
+        15 Roasted Blend             Well-balanced mix of roeasted beans, a medium body                                                   roasted.jpg                      9.5                                       1                                                                             
+
+11 rows selected. 
+
+SQL> 
+SQL> -- 5-2: Using a Procedure with IN Parameters
+SQL> CREATE OR REPLACE PROCEDURE PROD_ADD_SP
+  2      (p_name IN bb_product.productname%TYPE,
+  3      p_desc IN bb_product.description%TYPE,
+  4      p_img_path IN bb_product.productimage%TYPE,
+  5      p_price IN bb_product.price%TYPE,
+  6      p_status IN bb_product.active%TYPE)
+  7  IS
+  8  BEGIN
+  9      INSERT INTO bb_product (idproduct, productname, description, productimage, price, active)
+ 10          VALUES(BB_PRODID_SEQ.nextval, p_name, p_desc, p_img_path, p_price, p_status);
+ 11  END;
+ 12  /
+
+Procedure PROD_ADD_SP compiled
+
+SQL> DECLARE
+  2      name bb_product.productname%TYPE := 'Roasted Blend';
+  3      descrip bb_product.description%TYPE := 'Well-balanced mix of roeasted beans, a medium body';
+  4      img_path bb_product.productimage%TYPE := 'roasted.jpg';
+  5      price bb_product.price%TYPE := 9.50;
+  6      active_status bb_product.active%TYPE := 1;
+  7  BEGIN
+  8      PROD_ADD_SP(name, descrip, img_path, price, active_status);
+  9      COMMIT;
+ 10  END;
+ 11  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM BB_PRODUCT;
+
+ IDPRODUCT PRODUCTNAME               DESCRIPTION                                                                                          PRODUCTIMAGE                   PRICE SALESTAR SALEEND   SALEPRICE     ACTIVE   FEATURED FEATURES FEATUREE T IDDEPARTMENT      STOCK    ORDERED    REORDER
+---------- ------------------------- ---------------------------------------------------------------------------------------------------- ------------------------- ---------- -------- -------- ---------- ---------- ---------- -------- -------- - ------------ ---------- ---------- ----------
+         1 CapressoBar Modal #351    CapressoBar Model #388                                                                               capresso.gif                   99.98                                       1                              E            2         23          0         12
+         2 Capresso Ultima           Coffee and Espresso and Cappuccino Machine. Brews from one espresso to two six ounce cups of coffee  capresso2.gif                 129.99                                       1                              E            2         15          0          9
+         3 Eileen 4-cup French Press A unique coffeemaker from those proud craftsmen in windy Normandy.                                   frepress.gif                    32.5                                       1                              E            2         30          0         15
+         4 Coffee Grinder            Avoid blade grinders! This mill grinder allows you to choose a fine grind to a coarse grind.         grind.gif                       28.5                                       1                              E            2         26          0         25
+         5 Sumatra                   Spicy and intense with herbal aroma.                                                                 sumatra.jpg                     10.5                                       1                              C            1         41          0         45
+         6 Guatamala                 heavy body, spicy twist, aromatic and smokey flavor.                                                 Guatamala.jpg                     10 01/06/12 15/06/12          8          1                              C            1         42          0         35
+         7 Columbia                  dry, nutty flavor and smoothness                                                                     columbia.jpg                    10.8                                       1                              C            1         61          0         35
+         8 Brazil                    well-balanced mellow flavor, a medium body with hints of cocoa and a mild, nut-like aftertaste       brazil.jpg                      10.8                                       1                              C            1         53          0         35
+         9 Ethiopia                  distinctive berry-like flavor and aroma, reminds many of a fruity, memorable wine.                   ethiopia.jpg                      15                                       1                              C            1         54          0         35
+        10 Espresso                  dense, caramel-like sweetness with a soft acidity. Roasted somewhat darker than traditional Italian. espresso.jpg                      10                                       1                              C            1         50         50         50
+        15 Roasted Blend             Well-balanced mix of roeasted beans, a medium body                                                   roasted.jpg                      9.5                                       1                                                                             
+
+ IDPRODUCT PRODUCTNAME               DESCRIPTION                                                                                          PRODUCTIMAGE                   PRICE SALESTAR SALEEND   SALEPRICE     ACTIVE   FEATURED FEATURES FEATUREE T IDDEPARTMENT      STOCK    ORDERED    REORDER
+---------- ------------------------- ---------------------------------------------------------------------------------------------------- ------------------------- ---------- -------- -------- ---------- ---------- ---------- -------- -------- - ------------ ---------- ---------- ----------
+        16 Roasted Blend             Well-balanced mix of roeasted beans, a medium body                                                   roasted.jpg                      9.5                                       1                                                                             
+
+12 rows selected. 
+
+SQL> SELECT * FROM BB_TAX;
+
+   IDSTATE ST    TAXRATE
+---------- -- ----------
+         1 VA       .045
+         2 NC        .03
+         3 SC        .06
+
+SQL> -- 5-3: Calculating the Tax on an Order
+SQL> CREATE OR REPLACE PROCEDURE TAX_COST_SP
+  2  (
+  3      lv_state IN BB_TAX.STATE%TYPE,
+  4      subtotal IN NUMBER,
+  5      tax OUT NUMBER
+  6  )
+  7  IS
+  8      lv_taxrate BB_TAX.TAXRATE%TYPE;
+  9  
+ 10  BEGIN
+ 11      SELECT TAXRATE INTO lv_taxrate
+ 12      FROM BB_TAX
+ 13      WHERE STATE = lv_state;
+ 14      tax := lv_taxrate * subtotal;
+ 15  EXCEPTION
+ 16      WHEN NO_DATA_FOUND THEN
+ 17          tax := 0;
+ 18  END;
+ 19  /
+
+Procedure TAX_COST_SP compiled
+
+SQL> DECLARE
+  2      lv_state BB_TAX.STATE%TYPE := 'VA';
+  3      subtotal NUMBER(5,2) := 100;
+  4      tax NUMBER(5,2);
+  5  BEGIN
+  6      TAX_COST_SP(lv_state, subtotal, tax);
+  7      DBMS_OUTPUT.PUT_LINE('$'||tax);
+  8  END;
+  9  /
+$4.5
+
+
+PL/SQL procedure successfully completed.
+
+SQL> desc BB_BASKET;
+Name          Null?    Type         
+------------- -------- ------------ 
+IDBASKET      NOT NULL NUMBER(5)    
+QUANTITY               NUMBER(2)    
+IDSHOPPER              NUMBER(4)    
+ORDERPLACED            NUMBER(1)    
+SUBTOTAL               NUMBER(7,2)  
+TOTAL                  NUMBER(7,2)  
+SHIPPING               NUMBER(5,2)  
+TAX                    NUMBER(5,2)  
+DTCREATED              DATE         
+PROMO                  NUMBER(2)    
+SHIPFIRSTNAME          VARCHAR2(10) 
+SHIPLASTNAME           VARCHAR2(  SUBTOTAL = lv_subtotal,
+ 14          SHIPPING = lv_shipping,
+ 15          TAX = lv_tax,
+ 16          TOTAL = lv_total
+ 17      WHERE IDBASKET = lv_basketid;
+ 18      COMMIT;
+ 19  END;
+ 20  /
+
+Procedure BASKET_CONFIRM_SP compiled
+
+SQL> INSERT INTO BB_BASKET (IDBASKET, QUANTITY, IDSHOPPER,
+  2                          ORDERPlACED, SUBTOTAL, TOTAL,
+  3                          SHIPPING, TAX, DTCREATED, PROMO)
+  4      VALUES (17,2,22,0,0,0,0,0,'28-FEB-12', 0);
+
+1 row inserted.
+
+SQL> INSERT INTO BB_BASKETITEM (IDBASKETITEM, IDPRODUCT, PRICE,
+  2                              QUANTITY, IDBASKET, OPTION1, OPTION2)
+  3      VALUES (44,7,10.8,3,17,2,3);
+
+1 row inserted.
+
+SQL> INSERT INTO BB_BASKETITEM (IDBASKETITEM, IDPRODUCT, PRICE,
+  2                              QUANTITY, IDBASKET, OPTION1, OPTION2)
+  3      VALUES (45,8,10.8,3,17,2,3);
+
+1 row inserted.
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> DECLARE
+  2      lv_basketid BB_BASKET.IDBASKET%TYPE := 17;
+  3      lv_subtotal BB_BASKET.SUBTOTAL%TYPE := 64.80;
+  4      lv_shipping BB_BASKET.SHIPPING%TYPE := 8.00;
+  5      lv_tax BB_BASKET.TAX%TYPE := 1.94;
+  6      lv_total BB_BASKET.TOTAL%TYPE := 74.74;
+  7  BEGIN
+  8      BASKET_CONFIRM_SP(lv_basketid, lv_subtotal, lv_shipping, lv_tax, lv_total);
+  9  END;
+ 10  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT subtotal, shipping, tax, total, orderplaced
+  2      FROM bb_basket
+  3      WHERE idbasket = 17;
+
+  SUBTOTAL   SHIPPING        TAX      TOTAL ORDERPLACED
+---------- ---------- ---------- ---------- -----------
+      64.8          8       1.94      74.74           1
+
+SQL> 
+SQL> 
+SQL> -- 5-5: Updating Order Status
+SQL> DESC BB_BASKETSTATUS;
+Name        Null?    Type         
+----------- -------- ------------ 
+IDSTATUS    NOT NULL NUMBER(5)    
+IDBASKET             NUMBER(5)    
+IDSTAGE              NUMBER(1)    
+DTSTAGE              DATE         
+NOTES                VARCHAR2(50) 
+SHIPPER              VARCHAR2(5)  
+SHIPPINGNUM          VARCHAR2(20) 
+SQL> CREATE OR REPLACE PROCEDURE STATUS_SHIPS_SP
+  2  (
+  3      lv_basketid IN BB_BASKETSTATUS.IDBASKET%type,
+  4      lv_date_shipped IN BB_BASKETSTATUS.DTSTAGE%TYPE,
+  5      lv_shipper IN BB_BASKETSTATUS.SHIPPER%TYPE,
+  6      lv_ship_num IN BB_BASKETSTATUS.SHIPPINGNUM%TYPE
+  7  )
+  8  IS
+  9  BEGIN
+ 10      INSERT INTO BB_BASKETSTATUS (idstatus, idbasket, idstage,
+ 11                                  dtstage, shipper, shippingnum)
+ 12          VALUES(BB_STATUS_SEQ.nextval, lv_basketid, 3,
+ 13                  lv_date_shipped, lv_shipper, lv_ship_num);
+ 14      COMMIT;
+ 15  END;
+ 16  /
+
+Procedure STATUS_SHIPS_SP compiled
+
+SQL> DECLARE
+  2      lv_basketid BB_BASKETSTATUS.IDBASKET%TYPE := 3;
+  3      lv_date_shipped BB_BASKETSTATUS.DTSTAGE%TYPE := '20-FEB-12';
+  4      lv_shipper BB_BASKETSTATUS.SHIPPER%TYPE := 'UPS';
+  5      lv_ship_num BB_BASKETSTATUS.SHIPPINGNUM%TYPE := 'ZW2384YXK4957';
+  6  BEGIN
+  7      STATUS_SHIPS_SP(lv_basketid, lv_date_shipped, lv_shipper, lv_ship_num);
+  8  END;
+  9  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM BB_BASKETSTATUS
+  2  WHERE IDBASKET = 3;
+
+  IDSTATUS   IDBASKET    IDSTAGE DTSTAGE  NOTES                                              SHIPP SHIPPINGNUM         
+---------- ---------- ---------- -------- -------------------------------------------------- ----- --------------------
+         1          3          1 24/01/12                                                                              
+         2          3          5 25/01/12 Customer called to confirm shipment                UPS   ZW845584GD89H569    
+        16          3          3 20/02/12                                                    UPS   ZW2384YXK4957       
+
+SQL> 
+SQL> -- 5-6: Returning Order Status Information
+SQL> CREATE OR REPLACE PROCEDURE STATUS_SP
+  2  (
+  3      lv_basketid IN BB_BASKETSTATUS.IDBASKET%TYPE,
+  4      lv_status OUT VARCHAR
+  5  )
+  6  IS
+  7      status_num BB_BASKETSTATUS.IDSTATUS%TYPE;
+  8  BEGIN
+  9      SELECT IDSTAGE 
+ 10          INTO status_num
+ 11          FROM BB_BASKETSTATUS
+ 12          WHERE DTSTAGE = (
+ 13                  SELECT MAX(DTSTAGE) FROM BB_BASKETSTATUS
+ 14                  WHERE IDBASKET = lv_basketid
+ 15              );
+ 16      CASE status_num
+ 17          WHEN 1 THEN
+ 18              lv_status := 'Submitted and recieved';
+ 19          WHEN 2 THEN
+ 20              lv_status := 'Confirmed, processed, sent to shipping';
+ 21          WHEN 3 THEN
+ 22              lv_status := 'Shipped';
+ 23          WHEN 4 THEN
+ 24              lv_status := 'Cancelled';
+ 25          WHEN 5 THEN
+ 26              lv_status := 'Back-ordered';
+ 27          ELSE
+ 28              lv_status := 'No status is available';
+ 29      END CASE;
+ 30  EXCEPTION
+ 31      WHEN NO_DATA_FOUND THEN
+ 32          lv_status := 'No status is available';
+ 33  END;
+ 34  /
+
+Procedure STATUS_SP compiled
+
+SQL> DECLARE
+  2      lv_status VARCHAR2(30);
+  3  BEGIN
+  4      STATUS_SP(4, lv_status);
+  5      DBMS_OUTPUT.PUT_LINE(lv_status);
+  6      STATUS_SP(6, lv_status);
+  7      DBMS_OUTPUT.PUT_LINE(lv_status);
+  8  END;
+  9  /
+Back-ordered
+No status is available
+
+
+PL/SQL procedure successfully completed.
+
+SQL> desc BB_PROMOLIST;
+Name       Null? Type      
+---------- ----- --------- 
+IDSHOPPER        NUMBER(4) 
+MONTH            CHAR(3)   
+YEAR             CHAR(4)   
+PROMO_FLAG       CHAR(2)   
+USED             CHAR(1)   
+SQL> -- 5-7: Identifying Customers
+SQL> CREATE OR REPLACE PROCEDURE PROMO_SHIP_SP
+  2  (
+  3      lv_cutoff_date IN BB_BASKET.DTCREATED%TYPE,
+  4      lv_month IN BB_PROMOLIST.MONTH%TYPE,
+  5      lv_year IN BB_PROMOLIST.YEAR%TYPE,
+  6      lv_promo_flag IN BB_PROMOLIST.PROMO_FLAG%TYPE
+  7  )
+  8  IS
+  9      CURSOR cur_shoppers IS
+ 10          SELECT DISTINCT IDSHOPPER FROM BB_BASKET b
+ 11              WHERE NOT EXISTS (
+ 12                  SELECT 1
+ 13                  FROM BB_BASKET
+ 14                  WHERE IDSHOPPER = b.IDSHOPPER
+ 15                      AND DTCREATED >= lv_cutoff_date
+ 16              );
+ 17  
+ 18      shopper BB_BASKET.IDSHOPPER%TYPE;
+ 19  BEGIN
+ 20      FOR shopper in cur_shoppers LOOP
+ 21          INSERT INTO BB_PROMOLIST (idshopper, month, year, promo_flag, used)
+ 22              VALUES(shopper.IDSHOPPER, lv_month, lv_year, lv_promo_flag, 'N');
+ 23      END LOOP;
+ 24      COMMIT;
+ 25  END;
+ 26  /
+
+Procedure PROMO_SHIP_SP compiled
+
+SQL> DECLARE
+  2      lv_cutoff_date BB_BASKET.DTCREATED%TYPE := TO_DATE('12/02/12', 'DD/MM/YY');
+  3      lv_month BB_PROMOLIST.MONTH%TYPE := 'APR';
+  4      lv_year BB_PROMOLIST.YEAR%TYPE := '2012';
+  5      lv_promo_flag BB_PROMOLIST.PROMO_FLAG%TYPE := 1;
+  6  BEGIN
+  7      PROMO_SHIP_SP(lv_cutoff_date, lv_month, lv_year, lv_promo_flag);
+  8  END;
+  9  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM BB_PROMOLIST;
+
+ IDSHOPPER MON YEAR PR U
+---------- --- ---- -- -
+        26 APR 2012 1  N
+
+SQL> 
+SQL> -- 5-8: Adding Items to a Basket
+SQL> CREATE OR REPLACE PROCEDURE BASKET_ADD_SP
+  2  (
+  3      lv_productid IN BB_BASKETITEM.IDPRODUCT%TYPE,
+  4      lv_basketid IN BB_BASKET.IDBASKET%TYPE,
+  5      lv_price IN BB_BASKETITEM.PRICE%TYPE,
+  6      lv_quantity BB_BASKETITEM.QUANTITY%TYPE,
+  7      lv_size_code BB_BASKETITEM.OPTION1%TYPE,
+  8      lv_form_code BB_BASKETITEM.OPTION2%TYPE
+  9  )
+ 10  IS
+ 11  BEGIN
+ 12      INSERT INTO BB_BASKETITEM 
+ 13              (IDBASKETITEM, IDPRODUCT, PRICE, QUANTITY,
+ 14              IDBASKET, OPTION1, OPTION2)
+ 15          VALUES
+ 16              (BB_IDBASKETITEM_SEQ.nextval, lv_productid, lv_price,
+ 17              lv_quantity, lv_basketid, lv_size_code, lv_form_code);
+ 18      COMMIT;
+ 19  END;
+ 20  /
+
+Procedure BASKET_ADD_SP compiled
+
+SQL> BEGIN
+  2      BASKET_ADD_SP(8, 14, 10.80, 1, 2, 4);
+  3  END;
+  4  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM BB_BASKETITEM
+  2  WHERE IDBASKET = 14;
+
+IDBASKETITEM  IDPRODUCT      PRICE   QUANTITY   IDBASKET    OPTION1    OPTION2
+------------ ---------- ---------- ---------- ---------- ---------- ----------
+          50          8       10.8          1         14          2          4
+
+SQL> desc bb_shopper;
+Name      Null?    Type         
+--------- -------- ------------ 
+IDSHOPPER NOT NULL NUMBER(4)    
+FIRSTNAME          VARCHAR2(15) 
+LASTNAME           VARCHAR2(20) 
+ADDRESS            VARCHAR2(40) 
+CITY               VARCHAR2(20) 
+STATE              CHAR(2)      
+ZIPCODE            VARCHAR2(15) 
+PHONE              VARCHAR2(10) 
+FAX                VARCHAR2(10) 
+EMAIL              VARCHAR2(25) 
+USERNAME           VARCHAR2(8)  
+PASSWORD           VARCHAR2(8)  
+COOKIE             NUMBER(4)    
+DTENTERED          DATE         
+PROVINCE           VARCHAR2(15) 
+COUNTRY            VARCHAR2(15) 
+PROMO              CHAR(1)      
+SQL> -- 5-9: Creating a Logon Procedure
+SQL> CREATE OR REPLACE PROCEDURE MEMBER_CK_SP
+  2  (
+  3      lv_id IN BB_SHOPPER.USERNAME%TYPE,
+  4      lv_pass IN OUT BB_SHOPPER.PASSWORD%TYPE,
+  5      lv_cookie OUT BB_SHOPPER.COOKIE%TYPE,
+  6      p_check OUT VARCHAR2
+  7  )
+  8  IS
+  9      lv_fullname VARCHAR(30);
+ 10  BEGIN
+ 11      SELECT FIRSTNAME||' '||LASTNAME AS NAME, COOKIE
+ 12          INTO lv_fullname, lv_cookie
+ 13          FROM BB_SHOPPER
+ 14          WHERE USERNAME = lv_id
+ 15              AND PASSWORD = lv_pass;
+ 16      lv_pass := SUBSTR(lv_fullname, 1, 8);
+ 17  EXCEPTION
+ 18      WHEN NO_DATA_FOUND THEN
+ 19          p_check := 'Invalid';
+ 20  END;
+ 21  /
+
+Procedure MEMBER_CK_SP compiled
+
+SQL> DECLARE
+  2      lv_pass BB_SHOPPER.PASSWORD%TYPE := 'kile';
+  3      lv_cookie BB_SHOPPER.COOKIE%TYPE;
+  4      p_check VARCHAR2(8);
+  5  BEGIN
+  6      MEMBER_CK_SP('rat55', lv_pass, lv_cookie, p_check);
+  7      DBMS_OUTPUT.PUT_LINE(lv_pass|| ' ' ||lv_cookie|| ' ' ||p_check);
+  8      lv_pass := NULL;
+  9      lv_cookie := NULL;
+ 10      MEMBER_CK_SP('rat', lv_pass, lv_cookie, p_check);
+ 11      DBMS_OUTPUT.PUT_LINE(lv_pass|| ' ' ||lv_cookie|| ' ' ||p_check);
+ 12  END;
+Kenny Ra 0 
+  Invalid
+
+
+PL/SQL procedure successfully completed.
+
+SQL> SPOOL /home/daniel/Documents/Programming/PLSQL/Handout5.txt;
